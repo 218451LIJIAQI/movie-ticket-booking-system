@@ -1,0 +1,351 @@
+/* ============================
+   RESET & BASIC GLOBAL STYLES
+============================ */
+*, *::before, *::after {
+  margin: 0; 
+  padding: 0;
+  box-sizing: border-box;
+}
+body {
+  font-family: "Segoe UI", sans-serif;
+  background: #f0f2f7;
+  color: #333;
+  min-height: 100vh;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+button {
+  cursor: pointer;
+}
+
+/* =============================
+   HEADER (GRADIENT BACKGROUND)
+============================= */
+header {
+  background: linear-gradient(50deg, #1c3755, #e58427);
+  color: #fff;
+  text-align: center;
+  padding: 40px 20px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+header h1 {
+  font-size: 2rem;
+  margin-bottom: 5px;
+}
+header p {
+  font-size: 1rem;
+  opacity: 0.9;
+}
+
+/* ========================
+   LOGIN SCREEN
+======================== */
+#login-screen {
+  max-width: 400px;
+  margin: 60px auto;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 0 15px rgba(0,0,0,0.1);
+  padding: 20px;
+  text-align: center;
+}
+#login-screen h2 {
+  margin-bottom: 20px;
+}
+#login-screen input {
+  width: 80%;
+  display: block;
+  margin: 10px auto;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+/* ========================
+   MAIN WRAPPER (CARD)
+======================== */
+#admin-system {
+  display: none; /* 初始隐藏，只有登录成功后才显示 */
+}
+.main-wrapper {
+  max-width: 1400px;
+  margin: -20px auto 30px auto;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.15);
+  padding: 20px;
+  position: relative;
+  top: -20px;
+}
+
+/* ========================
+   NAVIGATION BAR
+======================== */
+.nav {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-around;
+  background: #232526;
+  border-radius: 8px;
+  margin-bottom: 30px;
+  overflow: hidden;
+}
+.nav a {
+  color: #fff;
+  padding: 15px 20px;
+  font-weight: 600;
+  transition: background-color 0.3s ease;
+}
+.nav a:hover {
+  background-color: #343435;
+}
+@media (max-width: 768px) {
+  .nav a {
+    flex: 1 1 100%;
+    text-align: center;
+    border-bottom: 1px solid #343435;
+  }
+  .nav a:last-child {
+    border: none;
+  }
+}
+
+/* ========================
+   SECTION STYLES
+======================== */
+.section {
+  margin-bottom: 40px;
+}
+.section h2 {
+  font-size: 1.4rem;
+  margin-bottom: 15px;
+  color: #495057;
+  border-bottom: 2px solid #ced4da;
+  padding-bottom: 8px;
+}
+
+/* ========================
+   TABLE STYLES
+======================== */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+  font-size: 0.9rem;
+}
+table th, 
+table td {
+  border: 1px solid #e1e5eb;
+  padding: 10px;
+  text-align: left;
+}
+table thead th {
+  background-color: #f8f9fa;
+  color: #495057;
+  font-weight: 600;
+}
+table tbody tr:hover {
+  background-color: #f2f4f6;
+}
+
+/* ========================
+   BUTTONS
+======================== */
+.button {
+  display: inline-block;
+  padding: 8px 12px;
+  margin-top: 5px;
+  margin-right: 5px;
+  border: none;
+  border-radius: 5px;
+  background-color: #007bff;
+  color: #fff;
+  font-size: 0.9rem;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+.button:hover {
+  background-color: #0056b3;
+  transform: translateY(-1px);
+}
+.success { background-color: #28a745; }
+.success:hover { background-color: #218838; }
+.danger { background-color: #dc3545; }
+.danger:hover { background-color: #c82333; }
+.info { background-color: #17a2b8; }
+.info:hover { background-color: #138496; }
+.dark { background-color: #343a40; }
+.dark:hover { background-color: #232526; }
+
+/* ========================
+   FORMS & INPUTS
+======================== */
+.form-inline {
+  margin-top: 10px;
+}
+.form-inline input {
+  padding: 5px 10px;
+  margin-right: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+.hidden { display: none; }
+
+/* ========================
+   MODAL OVERLAY & CONTENT
+======================== */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.5);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+.modal {
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  min-width: 400px;
+  position: relative;
+  box-shadow: 0 0 10px rgba(0,0,0,0.3);
+}
+.modal .modal-close {
+  position: absolute;
+  top: 10px; right: 15px;
+  font-size: 1.4rem;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: #666;
+}
+.modal .modal-close:hover {
+  color: #000;
+}
+.modal h3 {
+  margin-bottom: 10px;
+  font-size: 1.2rem;
+}
+.modal .form-group {
+  margin: 10px 0;
+}
+.modal .form-group label {
+  display: block;
+  margin-bottom: 4px;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+.modal .form-group input,
+.modal .form-group textarea {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+.modal .modal-actions {
+  text-align: right;
+  margin-top: 15px;
+}
+
+/* ========================
+   SPECIAL FEATURES: SEAT MAP
+======================== */
+.seat-map {
+  display: grid;
+  grid-template-columns: repeat(8, 30px);
+  gap: 5px;
+  margin: 15px 0;
+}
+.seat {
+  width: 30px; height: 30px;
+  background: #ddd;
+  border-radius: 3px;
+  text-align: center;
+  line-height: 30px;
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+.seat.occupied {
+  background: #ffc107; /* Occupied seat is yellowish */
+
+}
+.seat.selected {
+  background: #28a745; /* selected seat is green */
+  color: #fff;
+}
+.seat:hover:not(.occupied):not(.selected) {
+  background: #b0d8a4;
+}
+
+/* ========================
+   CHECKBOX GROUP
+======================== */
+.checkbox-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 5px 0;
+}
+
+.checkbox-group label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.checkbox-group input[type="checkbox"] {
+  margin: 0;
+}
+
+/* ========================
+   Logs Section
+======================== */
+.pagination {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+}
+
+.pagination button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+#page-info {
+    font-size: 14px;
+    color: #666;
+}
+
+#logs-table-body pre {
+    margin: 0;
+    white-space: pre-wrap;
+    font-size: 12px;
+    max-height: 100px;
+    overflow-y: auto;
+}
+
+#logs-table-body td {
+    vertical-align: top;
+    padding: 10px;
+}
+
+/* ========================
+   FOOTER / COPYRIGHT
+======================== */
+footer {
+  text-align: center;
+  padding: 10px;
+  color: #666;
+  font-size: 0.85rem;
+}

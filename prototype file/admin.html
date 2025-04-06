@@ -1,0 +1,1120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>The World's Best Movie Ticket Admin System (Local Version)</title>
+  <!-- 1) 引入Chart.js CDN，用于绘制图表 -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    /* ============================
+       RESET & BASIC GLOBAL STYLES
+    ============================ */
+    *, *::before, *::after {
+      margin: 0; 
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: "Segoe UI", sans-serif;
+      background: #f0f2f7;
+      color: #333;
+      min-height: 100vh;
+    }
+
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
+    button {
+      cursor: pointer;
+    }
+
+    /* =============================
+       HEADER (GRADIENT BACKGROUND)
+    ============================= */
+    header {
+      background: linear-gradient(50deg, #1c3755, #e58427);
+      color: #fff;
+      text-align: center;
+      padding: 40px 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+    header h1 {
+      font-size: 2rem;
+      margin-bottom: 5px;
+    }
+    header p {
+      font-size: 1rem;
+      opacity: 0.9;
+    }
+
+    /* ========================
+       LOGIN SCREEN
+    ======================== */
+    #login-screen {
+      max-width: 400px;
+      margin: 60px auto;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+      padding: 20px;
+      text-align: center;
+    }
+    #login-screen h2 {
+      margin-bottom: 20px;
+    }
+    #login-screen input {
+      width: 80%;
+      display: block;
+      margin: 10px auto;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    /* ========================
+       MAIN WRAPPER (CARD)
+    ======================== */
+    #admin-system {
+      display: none; /* 初始隐藏，只有登录成功后才显示 */
+    }
+    .main-wrapper {
+      max-width: 1400px;
+      margin: -20px auto 30px auto;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.15);
+      padding: 20px;
+      position: relative;
+      top: -20px;
+    }
+
+    /* ========================
+       NAVIGATION BAR
+    ======================== */
+    .nav {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-around;
+      background: #232526;
+      border-radius: 8px;
+      margin-bottom: 30px;
+      overflow: hidden;
+    }
+    .nav a {
+      color: #fff;
+      padding: 15px 20px;
+      font-weight: 600;
+      transition: background-color 0.3s ease;
+    }
+    .nav a:hover {
+      background-color: #343435;
+    }
+    @media (max-width: 768px) {
+      .nav a {
+        flex: 1 1 100%;
+        text-align: center;
+        border-bottom: 1px solid #343435;
+      }
+      .nav a:last-child {
+        border: none;
+      }
+    }
+
+    /* ========================
+       SECTION STYLES
+    ======================== */
+    .section {
+      margin-bottom: 40px;
+    }
+    .section h2 {
+      font-size: 1.4rem;
+      margin-bottom: 15px;
+      color: #495057;
+      border-bottom: 2px solid #ced4da;
+      padding-bottom: 8px;
+    }
+
+    /* ========================
+       TABLE STYLES
+    ======================== */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+      font-size: 0.9rem;
+    }
+    table th, 
+    table td {
+      border: 1px solid #e1e5eb;
+      padding: 10px;
+      text-align: left;
+    }
+    table thead th {
+      background-color: #f8f9fa;
+      color: #495057;
+      font-weight: 600;
+    }
+    table tbody tr:hover {
+      background-color: #f2f4f6;
+    }
+
+    /* ========================
+       BUTTONS
+    ======================== */
+    .button {
+      display: inline-block;
+      padding: 8px 12px;
+      margin-top: 5px;
+      margin-right: 5px;
+      border: none;
+      border-radius: 5px;
+      background-color: #007bff;
+      color: #fff;
+      font-size: 0.9rem;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+    .button:hover {
+      background-color: #0056b3;
+      transform: translateY(-1px);
+    }
+    .success { background-color: #28a745; }
+    .success:hover { background-color: #218838; }
+    .danger { background-color: #dc3545; }
+    .danger:hover { background-color: #c82333; }
+    .info { background-color: #17a2b8; }
+    .info:hover { background-color: #138496; }
+    .dark { background-color: #343a40; }
+    .dark:hover { background-color: #232526; }
+
+    /* ========================
+       FORMS & INPUTS
+    ======================== */
+    .form-inline {
+      margin-top: 10px;
+    }
+    .form-inline input {
+      padding: 5px 10px;
+      margin-right: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    .hidden { display: none; }
+
+    /* ========================
+       MODAL OVERLAY & CONTENT
+    ======================== */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+    }
+    .modal {
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      min-width: 400px;
+      position: relative;
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+    }
+    .modal .modal-close {
+      position: absolute;
+      top: 10px; right: 15px;
+      font-size: 1.4rem;
+      border: none;
+      background: none;
+      cursor: pointer;
+      color: #666;
+    }
+    .modal .modal-close:hover {
+      color: #000;
+    }
+    .modal h3 {
+      margin-bottom: 10px;
+      font-size: 1.2rem;
+    }
+    .modal .form-group {
+      margin: 10px 0;
+    }
+    .modal .form-group label {
+      display: block;
+      margin-bottom: 4px;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+    .modal .form-group input,
+    .modal .form-group textarea {
+      width: 100%;
+      padding: 6px 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 0.9rem;
+    }
+    .modal .modal-actions {
+      text-align: right;
+      margin-top: 15px;
+    }
+
+    /* ========================
+       SPECIAL FEATURES: SEAT MAP
+    ======================== */
+    .seat-map {
+      display: grid;
+      grid-template-columns: repeat(8, 30px);
+      gap: 5px;
+      margin: 15px 0;
+    }
+    .seat {
+      width: 30px; height: 30px;
+      background: #ddd;
+      border-radius: 3px;
+      text-align: center;
+      line-height: 30px;
+      cursor: pointer;
+      font-size: 0.8rem;
+    }
+    .seat.occupied {
+      background: #ffc107; /* Occupied seat is yellowish */
+      cursor: not-allowed;
+    }
+    .seat.selected {
+      background: #28a745; /* selected seat is green */
+      color: #fff;
+    }
+    .seat:hover:not(.occupied):not(.selected) {
+      background: #b0d8a4;
+    }
+
+    /* ========================
+       FOOTER / COPYRIGHT
+    ======================== */
+    footer {
+      text-align: center;
+      padding: 10px;
+      color: #666;
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+  <!-- ========== HEADER ========== -->
+  <header>
+    <h1>Movie Ticket Admin System</h1>
+    <p></p>
+  </header>
+
+  <!-- ========== LOGIN SCREEN ========== -->
+  <div id="login-screen">
+    <h2>Please Login</h2>
+    <input type="text" id="login-username" placeholder="Username (e.g. admin)">
+    <input type="password" id="login-password" placeholder="Password (e.g. 12345)">
+    <button class="button success" onclick="login()">Login</button>
+  </div>
+
+  <!-- ========== MAIN ADMIN SYSTEM ========== -->
+  <div id="admin-system">
+    <div class="main-wrapper">
+      <!-- ========== NAVIGATION ========== -->
+      <div class="nav">
+        <a href="#user-management">Users</a>
+        <a href="#booking-management">Bookings</a>
+        <a href="#movie-management">Movies</a>
+        <a href="#membership">Membership</a>
+        <a href="#promotions">Promotions</a>
+        <a href="#reviews">Reviews</a>
+        <a href="#analytics">Analytics</a>
+        <a href="#logs">Logs</a>
+        <a href="#seat-management">Seat Map</a>
+      </div>
+
+      <!-- ========== USER MANAGEMENT ========== -->
+      <section id="user-management" class="section">
+        <h2>User Management</h2>
+        <button class="button info" id="btn-view-users">View All Users</button>
+        <button class="button" id="btn-search-users-toggle">Search Users</button>
+
+        <div id="search-users-form" class="form-inline hidden">
+          <input type="text" id="search-users-input" placeholder="Username/Email">
+          <button class="button" id="btn-search-users">Search</button>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>User ID</th>
+              <th>Username</th>
+              <th>Email</th>
+              <th>Points</th>
+              <th>Membership</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="user-table-body">
+            <!-- Dynamic rows -->
+          </tbody>
+        </table>
+      </section>
+
+      <!-- ========== BOOKING MANAGEMENT ========== -->
+      <section id="booking-management" class="section">
+        <h2>Booking Management</h2>
+        <button class="button success" id="btn-view-bookings">View All Bookings</button>
+        <button class="button" id="btn-filter-bookings-toggle">Filter Bookings</button>
+
+        <div id="filter-bookings-form" class="form-inline hidden">
+          <input type="text" id="filter-user-id" placeholder="User ID">
+          <input type="text" id="filter-movie-id" placeholder="Movie ID">
+          <button class="button" id="btn-filter-bookings">Filter</button>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Booking ID</th>
+              <th>User</th>
+              <th>Movie</th>
+              <th>Show Time</th>
+              <th>Seats</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="booking-table-body">
+            <!-- Dynamic rows -->
+          </tbody>
+        </table>
+      </section>
+
+      <!-- ========== MOVIE MANAGEMENT ========== -->
+      <section id="movie-management" class="section">
+        <h2>Movie Management</h2>
+        <button class="button" id="btn-add-movie-toggle">Add New Movie</button>
+        <button class="button info" id="btn-view-movies">View All Movies</button>
+
+        <!-- Add movie modal -->
+        <div class="modal-overlay" id="modal-add-movie">
+          <div class="modal">
+            <button class="modal-close" id="modal-add-movie-close">&times;</button>
+            <h3>Add New Movie</h3>
+            <div class="form-group">
+              <label>Title</label>
+              <input type="text" id="movie-title">
+            </div>
+            <div class="form-group">
+              <label>Genre</label>
+              <input type="text" id="movie-genre">
+            </div>
+            <div class="form-group">
+              <label>Description</label>
+              <textarea id="movie-description" rows="3"></textarea>
+            </div>
+            <div class="form-group">
+              <label>Rating (0-10)</label>
+              <input type="number" step="0.1" id="movie-rating">
+            </div>
+            <div class="form-group">
+              <label>Actors (comma-separated)</label>
+              <input type="text" id="movie-actors">
+            </div>
+            <div class="modal-actions">
+              <button class="button success" id="btn-submit-new-movie">Add Movie</button>
+            </div>
+          </div>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Movie ID</th>
+              <th>Title</th>
+              <th>Genre</th>
+              <th>Rating</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="movie-table-body">
+            <!-- Dynamic rows -->
+          </tbody>
+        </table>
+      </section>
+
+      <!-- ========== MEMBERSHIP ========== -->
+      <section id="membership" class="section">
+        <h2>Membership Management</h2>
+        <button class="button" id="btn-view-members">View Members</button>
+        <button class="button success" id="btn-update-tier">Update Tier</button>
+        <div id="membership-info">
+          <p>Membership Tiers: Basic, Silver, Gold, Platinum</p>
+          <p>Users earn points with each booking. Tiers unlock discounts or exclusive seats.</p>
+        </div>
+      </section>
+
+      <!-- ========== PROMOTIONS ========== -->
+      <section id="promotions" class="section">
+        <h2>Promotions</h2>
+        <button class="button" id="btn-view-promotions">View All Promotions</button>
+        <button class="button success" id="btn-add-promo-toggle">Create Promotion</button>
+
+        <!-- Add Promo Modal -->
+        <div class="modal-overlay" id="modal-add-promo">
+          <div class="modal">
+            <button class="modal-close" id="modal-add-promo-close">&times;</button>
+            <h3>Create New Promotion</h3>
+            <div class="form-group">
+              <label>Promo Name</label>
+              <input type="text" id="promo-name" placeholder="Summer Discount">
+            </div>
+            <div class="form-group">
+              <label>Discount (%)</label>
+              <input type="number" id="promo-discount" placeholder="10">
+            </div>
+            <div class="form-group">
+              <label>Start Date</label>
+              <input type="date" id="promo-start-date">
+            </div>
+            <div class="form-group">
+              <label>End Date</label>
+              <input type="date" id="promo-end-date">
+            </div>
+            <div class="modal-actions">
+              <button class="button success" id="btn-submit-new-promo">Add Promotion</button>
+            </div>
+          </div>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Promo ID</th>
+              <th>Name</th>
+              <th>Discount</th>
+              <th>Validity</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="promo-table-body">
+            <!-- Dynamic rows -->
+          </tbody>
+        </table>
+      </section>
+
+      <!-- ========== REVIEWS ========== -->
+      <section id="reviews" class="section">
+        <h2>User Reviews</h2>
+        <button class="button" id="btn-view-reviews">View All Reviews</button>
+        <table>
+          <thead>
+            <tr>
+              <th>Review ID</th>
+              <th>Movie</th>
+              <th>User</th>
+              <th>Rating</th>
+              <th>Comment</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="review-table-body">
+            <!-- Dynamic rows -->
+          </tbody>
+        </table>
+      </section>
+
+      <!-- ========== ANALYTICS ========== -->
+      <section id="analytics" class="section">
+        <h2>Analytics</h2>
+        <p></p>
+
+        <!-- 2) 在这里添加一个canvas用于显示静态营业额增长趋势 -->
+        <canvas id="revenue-chart" width="400" height="200" 
+                style="max-width: 600px; margin: 0 auto; display:block;"></canvas>
+
+        <!-- 这个按钮用于手动刷新或重新绘制 -->
+        <div style="text-align:center; margin-top:10px;">
+          <button class="button" onclick="drawRevenueChart()">Show Growth Chart</button>
+        </div>
+      </section>
+
+      <!-- ========== LOGS ========== -->
+      <section id="logs" class="section">
+        <h2>Activity Logs</h2>
+        <button class="button danger" id="btn-export-logs">Export Logs</button>
+        <button class="button" id="btn-view-logs">View Logs</button>
+        <table>
+          <thead>
+            <tr>
+              <th>Log ID</th>
+              <th>Action</th>
+              <th>Time</th>
+            </tr>
+          </thead>
+          <tbody id="logs-table-body">
+            <!-- Dynamic rows -->
+          </tbody>
+        </table>
+      </section>
+
+      <!-- ========== SEAT MAP MANAGEMENT ========== -->
+      <section id="seat-management" class="section">
+        <h2>Seat Map Management</h2>
+        <button class="button" id="btn-show-seat-map">Show Seat Map</button>
+        <!-- Seat map modal -->
+        <div class="modal-overlay" id="modal-seat-map">
+          <div class="modal">
+            <button class="modal-close" id="modal-seat-map-close">&times;</button>
+            <h3>Manage Seat Layout</h3>
+            <p>Select seats to mark them as occupied or available.</p>
+            <div id="seat-map" class="seat-map">
+              <!-- Seats generated by JS -->
+            </div>
+            <div class="modal-actions">
+              <button class="button success" id="btn-save-seat-map">Save Layout</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 可选：退出按钮 -->
+      <div style="text-align:center; margin-top:30px;">
+        <button class="button danger" onclick="logout()">Logout</button>
+      </div>
+    </div>
+
+    <footer>
+      <p style="text-align:center;">
+        &copy; <span id="year"></span> World's Best Movie System (Local). 
+        All rights reserved.
+      </p>
+    </footer>
+  </div><!-- end #admin-system -->
+
+  <!-- ========== JAVASCRIPT LOGIC ========== -->
+  <script>
+    // ================================
+    // 0) 页面加载时检查登录状态
+    // ================================
+    window.onload = () => {
+      document.getElementById("year").textContent = new Date().getFullYear();
+      checkAuth(); 
+      setupEventListeners();
+    };
+
+    // 前端保存的静态数据，用于演示
+    const usersData = [
+      {id: 1, username: "john", email: "john@example.com", points: 100, membership: "Basic"},
+      {id: 2, username: "mary", email: "mary@example.com", points: 250, membership: "Silver"},
+      {id: 3, username: "anna", email: "anna@example.com", points: 600, membership: "Gold"}
+    ];
+    const bookingsData = [
+      {id: 101, userId: 1, userName: "john", movieId: 201, movieTitle: "Avatar 2", showTime: "2023-01-01 20:00", seats: "A1,A2"},
+      {id: 102, userId: 2, userName: "mary", movieId: 202, movieTitle: "Top Gun Maverick", showTime: "2023-02-10 19:30", seats: "B3,B4"}
+    ];
+    const moviesData = [
+      {id: 201, title: "Avatar 2", genre: "Sci-Fi", rating: 8.5},
+      {id: 202, title: "Top Gun Maverick", genre: "Action", rating: 9.0}
+    ];
+    const promotionsData = [
+      {id: 301, name: "Summer Promo", discount: 10, startDate: "2023-06-01", endDate: "2023-06-30"}
+    ];
+    const reviewsData = [
+      {id: 401, movieTitle: "Avatar 2", userName: "john", rating: 9, comment: "Great visuals!"},
+      {id: 402, movieTitle: "Top Gun Maverick", userName: "mary", rating: 10, comment: "Best action film!"}
+    ];
+    const logsData = [
+      {id: 501, action: "User john logged in", time: "2023-05-01 10:00"},
+      {id: 502, action: "Booking #102 created", time: "2023-05-01 10:05"}
+    ];
+
+    // ================================
+    // 登录检测：localStorage 存储状态
+    // ================================
+    function checkAuth() {
+      const loggedIn = localStorage.getItem("loggedIn");
+      if (loggedIn === "true") {
+        document.getElementById("login-screen").style.display = "none";
+        document.getElementById("admin-system").style.display = "block";
+      } else {
+        document.getElementById("login-screen").style.display = "block";
+        document.getElementById("admin-system").style.display = "none";
+      }
+    }
+
+    // ================================
+    // 登录逻辑（纯前端模拟）
+    // ================================
+    function login() {
+      const username = document.getElementById("login-username").value.trim();
+      const password = document.getElementById("login-password").value.trim();
+      // 简单模拟：账号=admin, 密码=12345 才能登录
+      if (username === "admin" && password === "12345") {
+        localStorage.setItem("loggedIn", "true");
+        checkAuth();
+      } else {
+        alert("Login failed! Try username=admin, password=12345.");
+      }
+    }
+
+    // ================================
+    // 退出逻辑（可选）
+    // ================================
+    function logout() {
+      if (confirm("Are you sure you want to logout?")) {
+        localStorage.removeItem("loggedIn");
+        checkAuth();
+      }
+    }
+
+    // ================================
+    // 设置事件监听
+    // ================================
+    function setupEventListeners() {
+      // 用户管理
+      document.getElementById("btn-view-users").addEventListener("click", fetchUsers);
+      document.getElementById("btn-search-users-toggle").addEventListener("click", () => {
+        document.getElementById("search-users-form").classList.toggle("hidden");
+      });
+      document.getElementById("btn-search-users").addEventListener("click", searchUsers);
+
+      // 预订管理
+      document.getElementById("btn-view-bookings").addEventListener("click", fetchBookings);
+      document.getElementById("btn-filter-bookings-toggle").addEventListener("click", () => {
+        document.getElementById("filter-bookings-form").classList.toggle("hidden");
+      });
+      document.getElementById("btn-filter-bookings").addEventListener("click", filterBookings);
+
+      // 电影管理
+      document.getElementById("btn-add-movie-toggle").addEventListener("click", () => {
+        document.getElementById("modal-add-movie").style.display = "flex";
+      });
+      document.getElementById("modal-add-movie-close").addEventListener("click", () => {
+        document.getElementById("modal-add-movie").style.display = "none";
+      });
+      document.getElementById("btn-submit-new-movie").addEventListener("click", addMovie);
+      document.getElementById("btn-view-movies").addEventListener("click", fetchMovies);
+
+      // 会员管理
+      document.getElementById("btn-view-members").addEventListener("click", () => {
+        alert("All users are in user management. Tiers: Basic, Silver, Gold, etc.");
+      });
+      document.getElementById("btn-update-tier").addEventListener("click", updateTier);
+
+      // 活动管理
+      document.getElementById("btn-view-promotions").addEventListener("click", fetchPromotions);
+      document.getElementById("btn-add-promo-toggle").addEventListener("click", () => {
+        document.getElementById("modal-add-promo").style.display = "flex";
+      });
+      document.getElementById("modal-add-promo-close").addEventListener("click", () => {
+        document.getElementById("modal-add-promo").style.display = "none";
+      });
+      document.getElementById("btn-submit-new-promo").addEventListener("click", addPromotion);
+
+      // 评论管理
+      document.getElementById("btn-view-reviews").addEventListener("click", fetchReviews);
+
+      // 日志
+      document.getElementById("btn-export-logs").addEventListener("click", () => {
+        alert("Logs exported (demo).");
+      });
+      document.getElementById("btn-view-logs").addEventListener("click", fetchLogs);
+
+      // 座位管理
+      document.getElementById("btn-show-seat-map").addEventListener("click", () => {
+        document.getElementById("modal-seat-map").style.display = "flex";
+        loadSeatMap();
+      });
+      document.getElementById("modal-seat-map-close").addEventListener("click", () => {
+        document.getElementById("modal-seat-map").style.display = "none";
+      });
+      document.getElementById("btn-save-seat-map").addEventListener("click", saveSeatMap);
+    }
+
+    // ================================
+    // 1) USER MANAGEMENT (本地静态数据)
+    // ================================
+    function fetchUsers() {
+      renderUserTable(usersData);
+    }
+    function renderUserTable(users) {
+      const userTableBody = document.getElementById("user-table-body");
+      userTableBody.innerHTML = "";
+      users.forEach(u => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${u.id}</td>
+          <td>${u.username}</td>
+          <td>${u.email}</td>
+          <td>${u.points}</td>
+          <td>${u.membership}</td>
+          <td>
+            <button class="button" onclick="editUser(${u.id})">Edit</button>
+            <button class="button danger" onclick="deleteUser(${u.id})">Delete</button>
+          </td>
+        `;
+        userTableBody.appendChild(tr);
+      });
+    }
+    function searchUsers() {
+      const keyword = document.getElementById("search-users-input").value.trim().toLowerCase();
+      if(!keyword) {
+        alert("Please enter a keyword.");
+        return;
+      }
+      const filtered = usersData.filter(u =>
+        u.username.toLowerCase().includes(keyword) ||
+        u.email.toLowerCase().includes(keyword)
+      );
+      renderUserTable(filtered);
+    }
+    function editUser(userId) {
+      const user = usersData.find(u => u.id === userId);
+      if (!user) return;
+      const newUsername = prompt("Enter new username:", user.username);
+      if(!newUsername) return;
+      const newPoints = prompt("Enter new points:", user.points);
+      const newMembership = prompt("Enter new membership (Basic/Silver/Gold/Platinum):", user.membership);
+      // 更新数据
+      user.username = newUsername;
+      user.points = parseInt(newPoints) || 0;
+      user.membership = newMembership;
+      renderUserTable(usersData);
+    }
+    function deleteUser(userId) {
+      if(!confirm("Delete user #" + userId + "?")) return;
+      const index = usersData.findIndex(u => u.id === userId);
+      if(index >= 0) {
+        usersData.splice(index, 1);
+        renderUserTable(usersData);
+        alert("User deleted.");
+      }
+    }
+
+    // ================================
+    // 2) BOOKING MANAGEMENT (本地静态)
+    // ================================
+    function fetchBookings() {
+      renderBookings(bookingsData);
+    }
+    function renderBookings(bookings) {
+      const bookingTableBody = document.getElementById("booking-table-body");
+      bookingTableBody.innerHTML = "";
+      bookings.forEach(b => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${b.id}</td>
+          <td>${b.userName}</td>
+          <td>${b.movieTitle}</td>
+          <td>${b.showTime}</td>
+          <td>${b.seats}</td>
+          <td>
+            <button class="button danger" onclick="deleteBooking(${b.id})">Delete</button>
+          </td>
+        `;
+        bookingTableBody.appendChild(tr);
+      });
+    }
+    function deleteBooking(bid) {
+      if(!confirm("Delete booking #" + bid + "?")) return;
+      const index = bookingsData.findIndex(b => b.id === bid);
+      if(index >= 0) {
+        bookingsData.splice(index, 1);
+        renderBookings(bookingsData);
+        alert("Booking deleted.");
+      }
+    }
+    function filterBookings() {
+      const uid = document.getElementById("filter-user-id").value.trim();
+      const mid = document.getElementById("filter-movie-id").value.trim();
+      let filtered = bookingsData;
+      if(uid) {
+        filtered = filtered.filter(b => b.userId.toString() === uid);
+      }
+      if(mid) {
+        filtered = filtered.filter(b => b.movieId.toString() === mid);
+      }
+      renderBookings(filtered);
+    }
+
+    // ================================
+    // 3) MOVIE MANAGEMENT (本地静态)
+    // ================================
+    function fetchMovies() {
+      renderMovies(moviesData);
+    }
+    function renderMovies(movies) {
+      const movieTableBody = document.getElementById("movie-table-body");
+      movieTableBody.innerHTML = "";
+      movies.forEach(m => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${m.id}</td>
+          <td>${m.title}</td>
+          <td>${m.genre}</td>
+          <td>${m.rating}</td>
+          <td>
+            <button class="button" onclick="editMovie(${m.id})">Edit</button>
+            <button class="button danger" onclick="deleteMovie(${m.id})">Delete</button>
+          </td>
+        `;
+        movieTableBody.appendChild(tr);
+      });
+    }
+    function addMovie() {
+      const title = document.getElementById("movie-title").value.trim();
+      const genre = document.getElementById("movie-genre").value.trim();
+      const description = document.getElementById("movie-description").value.trim();
+      const rating = parseFloat(document.getElementById("movie-rating").value);
+      const actors = document.getElementById("movie-actors").value.split(",").map(a => a.trim());
+      if(!title || !genre) {
+        alert("Title and Genre are required!");
+        return;
+      }
+      const newId = moviesData.length ? moviesData[moviesData.length - 1].id + 1 : 1;
+      const newMovie = {
+        id: newId,
+        title, genre,
+        rating: rating || 0,
+        actors,
+        description
+      };
+      moviesData.push(newMovie);
+      alert("Movie added: " + newMovie.title);
+      document.getElementById("modal-add-movie").style.display = "none";
+      clearMovieForm();
+      renderMovies(moviesData);
+    }
+    function clearMovieForm() {
+      document.getElementById("movie-title").value = "";
+      document.getElementById("movie-genre").value = "";
+      document.getElementById("movie-description").value = "";
+      document.getElementById("movie-rating").value = "";
+      document.getElementById("movie-actors").value = "";
+    }
+    function editMovie(mid) {
+      const movie = moviesData.find(m => m.id === mid);
+      if(!movie) return;
+      const newTitle = prompt("Enter new title:", movie.title);
+      const newRating = prompt("Enter new rating:", movie.rating);
+      if(newTitle) movie.title = newTitle;
+      if(newRating) movie.rating = parseFloat(newRating) || movie.rating;
+      renderMovies(moviesData);
+    }
+    function deleteMovie(mid) {
+      if(!confirm("Delete movie #" + mid + "?")) return;
+      const index = moviesData.findIndex(m => m.id === mid);
+      if(index >= 0) {
+        moviesData.splice(index, 1);
+        renderMovies(moviesData);
+        alert("Movie deleted.");
+      }
+    }
+
+    // ================================
+    // 4) MEMBERSHIP MANAGEMENT (DEMO)
+    // ================================
+    function updateTier() {
+      const userId = prompt("Enter user ID to update membership tier:");
+      if(!userId) return;
+      const user = usersData.find(u => u.id.toString() === userId);
+      if(!user) {
+        alert("User not found");
+        return;
+      }
+      const newTier = prompt("Enter new tier: Basic/Silver/Gold/Platinum", user.membership);
+      if(!newTier) return;
+      user.membership = newTier;
+      alert(`Membership updated for user #${user.id} to ${newTier}`);
+      renderUserTable(usersData);
+    }
+
+    // ================================
+    // 5) PROMOTIONS
+    // ================================
+    function fetchPromotions() {
+      renderPromotions(promotionsData);
+    }
+    function renderPromotions(promos) {
+      const promoTableBody = document.getElementById("promo-table-body");
+      promoTableBody.innerHTML = "";
+      promos.forEach(p => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${p.id}</td>
+          <td>${p.name}</td>
+          <td>${p.discount}%</td>
+          <td>${p.startDate} to ${p.endDate}</td>
+          <td>
+            <button class="button danger" onclick="removePromotion(${p.id})">Remove</button>
+          </td>
+        `;
+        promoTableBody.appendChild(tr);
+      });
+    }
+    function addPromotion() {
+      const name = document.getElementById("promo-name").value.trim();
+      const discount = parseFloat(document.getElementById("promo-discount").value);
+      const startDate = document.getElementById("promo-start-date").value;
+      const endDate = document.getElementById("promo-end-date").value;
+      if(!name || !discount || !startDate || !endDate) {
+        alert("All fields required!");
+        return;
+      }
+      const newId = promotionsData.length ? promotionsData[promotionsData.length-1].id + 1 : 1;
+      const newPromo = {id: newId, name, discount, startDate, endDate};
+      promotionsData.push(newPromo);
+      alert("Promotion added: " + newPromo.name);
+      document.getElementById("modal-add-promo").style.display = "none";
+      clearPromoForm();
+      renderPromotions(promotionsData);
+    }
+    function clearPromoForm() {
+      document.getElementById("promo-name").value = "";
+      document.getElementById("promo-discount").value = "";
+      document.getElementById("promo-start-date").value = "";
+      document.getElementById("promo-end-date").value = "";
+    }
+    function removePromotion(pid) {
+      if(!confirm("Remove promotion #" + pid + "?")) return;
+      const index = promotionsData.findIndex(p => p.id === pid);
+      if(index >= 0) {
+        promotionsData.splice(index, 1);
+        alert("Promotion removed.");
+        renderPromotions(promotionsData);
+      }
+    }
+
+    // ================================
+    // 6) REVIEWS
+    // ================================
+    function fetchReviews() {
+      renderReviews(reviewsData);
+    }
+    function renderReviews(revs) {
+      const reviewTableBody = document.getElementById("review-table-body");
+      reviewTableBody.innerHTML = "";
+      revs.forEach(r => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${r.id}</td>
+          <td>${r.movieTitle}</td>
+          <td>${r.userName}</td>
+          <td>${r.rating ?? "-"}</td>
+          <td>${r.comment ?? ""}</td>
+          <td>
+            <button class="button danger" onclick="deleteReview(${r.id})">Delete</button>
+            <button class="button" onclick="approveReview(${r.id})">Approve</button>
+          </td>
+        `;
+        reviewTableBody.appendChild(tr);
+      });
+    }
+    function deleteReview(rid) {
+      if(!confirm("Delete review #" + rid + "?")) return;
+      const index = reviewsData.findIndex(r => r.id === rid);
+      if(index >= 0) {
+        reviewsData.splice(index, 1);
+        alert("Review deleted.");
+        renderReviews(reviewsData);
+      }
+    }
+    function approveReview(rid) {
+      alert("Review approved (demo)!");
+    }
+
+    // ================================
+    // 7) Analytics - 静态营业额增长图
+    // ================================
+    let revenueChart; // 存储Chart实例
+
+    function drawRevenueChart() {
+      const ctx = document.getElementById("revenue-chart").getContext("2d");
+      
+      // 如果已经绘制过一次，需要先销毁旧图表，否则会重叠
+      if (revenueChart) {
+        revenueChart.destroy();
+      }
+
+      // 假设是影院最近6个月的营业额（单位: USD）
+      const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
+      const revenueData = [10000, 12000, 15000, 18000, 24000, 30000];
+
+      revenueChart = new Chart(ctx, {
+        type: "line",
+        data: {
+          labels: months,
+          datasets: [{
+            label: "Cinema Revenue ($)",
+            data: revenueData,
+            borderColor: "rgba(75,192,192,1)",
+            backgroundColor: "rgba(75,192,192,0.1)",
+            fill: true,
+            tension: 0.2, // 曲线弯曲程度
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: { display: true, text: "Revenue in USD" }
+            },
+            x: {
+              title: { display: true, text: "Month" }
+            }
+          }
+        }
+      });
+    }
+
+    // ================================
+    // 8) LOGS
+    // ================================
+    function fetchLogs() {
+      renderLogs(logsData);
+    }
+    function renderLogs(logs) {
+      const logsTableBody = document.getElementById("logs-table-body");
+      logsTableBody.innerHTML = "";
+      logs.forEach(log => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${log.id}</td>
+          <td>${log.action}</td>
+          <td>${log.time}</td>
+        `;
+        logsTableBody.appendChild(tr);
+      });
+    }
+
+    // ================================
+    // 9) SEAT MAP MANAGEMENT
+    // ================================
+    function loadSeatMap() {
+      const seatMapContainer = document.getElementById("seat-map");
+      seatMapContainer.innerHTML = "";
+      // 简单示例：40个座位
+      const occupied = [5, 6, 12, 13, 21, 31];
+      for(let i=0; i<40; i++) {
+        const seatDiv = document.createElement("div");
+        seatDiv.classList.add("seat");
+        seatDiv.textContent = i+1;
+        if(occupied.includes(i)) {
+          seatDiv.classList.add("occupied");
+        }
+        seatDiv.addEventListener("click", () => toggleSeat(seatDiv));
+        seatMapContainer.appendChild(seatDiv);
+      }
+    }
+    function toggleSeat(seatDiv) {
+      if(seatDiv.classList.contains("occupied")) return;
+      seatDiv.classList.toggle("selected");
+    }
+    function saveSeatMap() {
+      alert("Seat layout saved (demo).");
+      document.getElementById("modal-seat-map").style.display = "none";
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+{
+  "name": "prototype-ui-server",
+  "version": "1.0.0",
+  "description": "Node.js server for prototype UI",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "jspdf": "^2.5.2",
+    "mysql2": "^3.6.5"
+  }
+}

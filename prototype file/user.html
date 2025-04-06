@@ -1,0 +1,1338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Ticket Booking System (Pure Static)</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: url('images/banner.jpg') no-repeat center center fixed;
+            background-size: cover;
+        }
+
+        h1 {
+            font-size: 36px;
+            margin: 20px;
+            color: #fff;
+            text-align: center;
+            text-transform: uppercase;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px #000;
+        }
+
+        .log, #dashboard {
+            margin: 20px auto;
+            width: 50%;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        input, select, button {
+            margin: 10px 0;
+            padding: 10px;
+            width: 90%;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        button {
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        #dashboard {
+            display: none;
+        }
+
+        #movie-list li {
+            margin-bottom: 20px;
+            text-align: left;
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 8px;
+            background-color: #fff;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        #movie-list img {
+            display: block;
+            margin: 0 auto 10px;
+            width: 100%;
+            max-width: 300px;
+            border-radius: 8px;
+        }
+
+        #seat-container div {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            margin: 5px;
+            border: 1px solid #000;
+            text-align: center;
+            line-height: 40px;
+            cursor: pointer;
+        }
+
+        #seat-container div.selected {
+            background-color: green;
+            color: #fff;
+        }
+
+        .logout-btn {
+            margin-top: 20px;
+            background-color: #f44336;
+        }
+
+        .logout-btn:hover {
+            background-color: #d32f2f;
+        }
+
+        .payment-methods {
+            margin: 20px 0;
+        }
+
+        .payment-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .payment-option {
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .payment-option:hover {
+            border-color: #4CAF50;
+            transform: translateY(-2px);
+        }
+
+        .payment-option.selected {
+            border-color: #4CAF50;
+            background-color: #f0f9f0;
+        }
+
+        .payment-option img {
+            width: 60px;
+            height: 60px;
+            margin-bottom: 10px;
+        }
+
+        .payment-option span {
+            display: block;
+            font-size: 14px;
+        }
+
+        #payment-summary {
+            background-color: #f5f5f5;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .progress-content {
+            text-align: center;
+        }
+
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left-color: #4CAF50;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* 在style标签中添加弹窗样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            position: relative;
+            background-color: #fff;
+            margin: 5% auto;
+            padding: 20px;
+            width: 80%;
+            max-width: 600px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            animation: slideIn 0.3s ease-out;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-100px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .close-modal {
+            position: sticky;
+            top: 0;
+            right: 20px;
+            float: right;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+            background: #fff;
+            padding: 5px;
+            z-index: 1;
+        }
+
+        .close-modal:hover {
+            color: #000;
+        }
+
+        .payment-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .payment-option {
+            display: flex;
+            align-items: center;
+            padding: 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .payment-option:hover {
+            border-color: #4CAF50;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .payment-option.selected {
+            border-color: #4CAF50;
+            background-color: #f0f9f0;
+        }
+
+        .payment-icon {
+            width: 50px;
+            height: 50px;
+            margin-right: 15px;
+        }
+
+        .payment-details {
+            flex-grow: 1;
+        }
+
+        .payment-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .payment-description {
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #4CAF50;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .movie-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .movie-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .movie-poster {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+        }
+
+        .movie-details {
+            padding: 20px;
+        }
+
+        .movie-title {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+
+        .movie-info {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+
+        .movie-info span {
+            background: #f0f0f0;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+
+        .cast-list {
+            list-style: none;
+            padding: 0;
+            margin: 10px 0;
+        }
+
+        .cast-list li {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .reviews {
+            display: flex;
+            gap: 20px;
+            margin: 15px 0;
+        }
+
+        .price-booking {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+        }
+
+        .price {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+
+        .book-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .book-btn:hover {
+            background: #45a049;
+        }
+
+        /* 功能区域样式 */
+        .additional-features {
+            margin: 30px 0;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .features-title {
+            color: #333;
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            padding: 10px;
+        }
+
+        /* 功能按钮样式 */
+        .feature-btn {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: left;
+            width: 100%;
+        }
+
+        .feature-btn:hover {
+            border-color: #4CAF50;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(76, 175, 80, 0.2);
+        }
+
+        .feature-icon {
+            font-size: 24px;
+            margin-right: 15px;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f5f5f5;
+            border-radius: 10px;
+        }
+
+        .feature-content {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .feature-name {
+            font-weight: 600;
+            color: #333;
+            font-size: 16px;
+            margin-bottom: 4px;
+        }
+
+        .feature-desc {
+            font-size: 13px;
+            color: #666;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .feature-btn {
+                padding: 12px;
+            }
+        }
+
+        /* 动画效果 */
+        .feature-btn {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-btn::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(76, 175, 80, 0.1);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s ease, height 0.6s ease;
+        }
+
+        .feature-btn:hover::after {
+            width: 300px;
+            height: 300px;
+        }
+
+        /* Logout 按钮样式更新 */
+        .logout-btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            margin-top: 20px;
+            background-color: #f44336;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background-color: #d32f2f;
+        }
+
+        .booking-history-section {
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .booking-record {
+            padding: 15px;
+            margin: 10px 0;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            background: white;
+            transition: transform 0.2s ease;
+        }
+
+        .booking-record:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .booking-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 8px;
+        }
+
+        .booking-detail {
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .booking-date {
+            color: #4CAF50;
+            font-weight: bold;
+        }
+
+        .booking-status {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.9);
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+
+        .tracking-timeline {
+            position: relative;
+            padding: 20px 0;
+        }
+
+        .timeline-item {
+            display: flex;
+            margin-bottom: 20px;
+        }
+
+        .timeline-point {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #ddd;
+            margin-right: 20px;
+        }
+
+        .timeline-point.completed {
+            background: #4CAF50;
+        }
+
+        .booking-record {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .booking-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .booking-date {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .movie-detailed-info {
+            display: grid;
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .movie-primary-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+        }
+
+        .movie-description {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .movie-cast ul {
+            list-style: none;
+            padding: 0;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 8px;
+        }
+
+        .movie-cast li {
+            background: #f5f5f5;
+            padding: 8px 12px;
+            border-radius: 4px;
+        }
+
+        .movie-reviews {
+            display: flex;
+            gap: 20px;
+        }
+
+        .booking-details {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .booking-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .booking-actions button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .rate-movie-btn {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .cancel-movie-btn {
+            background: #f44336;
+            color: white;
+        }
+
+        .rate-movie-btn:hover {
+            background: #45a049;
+        }
+
+        .cancel-movie-btn:hover {
+            background: #d32f2f;
+        }
+
+        /* 美化滚动条样式 (适用于Webkit浏览器) */
+        .modal-content::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .modal-content::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        .modal-content::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+
+        .modal-content::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+    </style>
+</head>
+<body>
+<h1>Movie Ticket Booking System (Static)</h1>
+
+<!-- 登录页面 -->
+<div id="login-page" class="log">
+    <h2 class="section-title">Sign In Form</h2>
+    <form id="login-form">
+        <input type="text" id="login-username" placeholder="Enter your username">
+        <input type="password" id="login-password" placeholder="Enter your password">
+        <button type="button" id="login-btn">Sign In</button>
+        <button type="reset" class="reset">Reset</button>
+    </form>
+
+    <div id="register-section" style="margin-top: 20px;">
+        <h2>Register</h2>
+        <form id="register-form">
+            <input type="text" id="register-username" placeholder="Enter a new username" required>
+            <input type="password" id="register-password" placeholder="Enter a new password" required>
+            <button type="button" id="register-btn">Register</button>
+        </form>
+    </div>
+</div>
+
+<!-- 系统功能 -->
+<div id="dashboard" class="log">
+    <h2 class="welcome-header">Welcome to Movie Booking</h2>
+    <div id="user-welcome" class="user-greeting"></div>
+    
+    <!-- 电影列表部分 -->
+    <div class="movie-section">
+        <h3 class="section-title">Available Movies</h3>
+        <ul id="movie-list">
+            <!-- 动态加载电影清单 -->
+        </ul>
+    </div>
+
+    <!-- 座位选择部分 -->
+    <div id="seat-selection" style="display: none;">
+        <h3 class="section-title">Choose Your Seat</h3>
+        <div id="seat-container">
+            <!-- 座位图动态生成 -->
+        </div>
+        <button id="confirm-seat-btn" style="margin-top: 10px;">Confirm Seats</button>
+        
+        <!-- Payment Button - 确保在这里 -->
+        <button id="payment-btn" style="display: none;">Payment</button>
+    </div>
+
+    <!-- View Booking Ticket Button -->
+    <button id="view-booking-btn">View Booking Ticket</button>
+
+    <!-- 功能按钮区域 -->
+    <div class="additional-features">
+        <h3 class="features-title">Additional Services</h3>
+        <div class="features-grid">
+            <button class="feature-btn" data-feature="snacks">
+                <div class="feature-icon">🍿</div>
+                <div class="feature-content">
+                    <span class="feature-name">Snacks & Drinks</span>
+                    <span class="feature-desc">Order refreshments</span>
+                </div>
+            </button>
+
+            <button class="feature-btn" data-feature="membership">
+                <div class="feature-icon">💳</div>
+                <div class="feature-content">
+                    <span class="feature-name">Membership</span>
+                    <span class="feature-desc">Join our club</span>
+                </div>
+            </button>
+
+            <button class="feature-btn" data-feature="gift-cards">
+                <div class="feature-icon">🎁</div>
+                <div class="feature-content">
+                    <span class="feature-name">Gift Cards</span>
+                    <span class="feature-desc">Perfect presents</span>
+                </div>
+            </button>
+
+            <button class="feature-btn" data-feature="promotions">
+                <div class="feature-icon">🎉</div>
+                <div class="feature-content">
+                    <span class="feature-name">Promotions</span>
+                    <span class="feature-desc">Special offers</span>
+                </div>
+            </button>
+        </div>
+    </div>
+
+    <!-- Logout 按钮 -->
+    <button id="logout-btn" class="logout-btn">Logout</button>
+</div>
+
+<!-- 支付弹窗 -->
+<div id="payment-modal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal">&times;</span>
+        <h2>Select Payment Method</h2>
+        <div id="payment-amount"></div>
+        
+        <div class="payment-grid">
+            <div class="payment-option" data-method="apple">
+                <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0OCIgaGVpZ2h0PSI0OCIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCBkPSJNMTYuNSA3YTQuMDcgNC4wNyAwIDAgMC0yLjUuODQgNC4wNyA0LjA3IDAgMCAwLTIuNS0uODQgNC4yIDQuMiAwIDAgMC00LjIgNC4yIDguMjEgOC4yMSAwIDAgMCAzLjc0IDYuNyAyMS41NCAyMS41NCAwIDAgMCAyLjk2IDEuOSAyMS41NCAyMS41NCAwIDAgMCAyLjk2LTEuOSA4LjIxIDguMjEgMCAwIDAgMy43NC02LjcgNC4yIDQuMiAwIDAgMC00LjItNC4yeiIgZmlsbD0iIzAwMCIvPjwvc3ZnPg==" 
+                     class="payment-icon" alt="Apple Pay">
+                <div class="payment-details">
+                    <div class="payment-name">Apple Pay</div>
+                    <div class="payment-description">Quick and secure payment with Apple</div>
+                </div>
+            </div>
+            <div class="payment-option" data-method="google">
+                <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0OCIgaGVpZ2h0PSI0OCIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCBkPSJNMTEuOTk3IDQuMDcxYy0xLjMyMyAwLTIuNTIxLjQ0Ni0zLjQwNSAxLjE4OWwtMi40NTEtMi41ODVjLTMuMjYzIDMuMTg2LTUuMTE1IDcuNTg2LTUuMTExIDEyLjQyMyAwIDIuNTc1LjcwNiA1LjAwMSAxLjg4NyA3LjA1Ni43MTEtLjUwNCAxLjI1My0xLjA0NyAxLjcyNC0xLjYyOS0uNi0xLjA4Ni0uOTQ0LTIuMzQ5LS45NDQtMy43MTEgMC00LjQ3MyAzLjAyNS04LjEwNiA3LjE4My05LjQ1M2wzLjU3OC0zLjE4M3pNNi41NzcgMTEuMTk3bDEuNjIgMS42MmEzLjgwOCAzLjgwOCAwIDAgMCAuNzEgMS42MWwtMS42MyAxLjYyYTMuODE4IDMuODE4IDAgMCAwLS43MTQgMS42MiAzLjgwOCAzLjgwOCAwIDAgMCAwIDIuOTJsMS42MiAxLjYzYTMuODA4IDMuODA4IDAgMCAwIDEuNjIuNzEgMy44MDggMy44MDggMCAwIDAgMS42Mi0uNzJsMS42Mi0xLjYyLS43MS0xLjYyYTQuMjA5IDQuMjA5IDAgMCAwLS44NC0yLjUxIDIuNTg1IDIuNTg1IDAgMCAwIDAtMS40MDkgMy44MTggMy44MTggMCAwIDAtLjc0My0xLjcwOGwtMS42Mi0xLjYzYTMuODA4IDMuODA4IDAgMCAwLTEuNjMtLjcxN3oiIGZpbGw9IiMwMDg4MzAiLz48L3N2Zz4="
+                     class="payment-icon" alt="Google Pay">
+                <div class="payment-details">
+                    <div class="payment-name">Google Pay</div>
+                    <div class="payment-description">Pay with your Google account</div>
+                </div>
+            </div>
+            <div class="payment-option" data-method="paypal">
+                <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0OCIgaGVpZ2h0PSI0OCIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCBkPSJNMiAxOGMuMDQgMS4xLjg5IDIgMiAyaDQuOTVsMS4yNS03LjloLjAxYy4wNS0uMzYuMzYtLjYyLjcyLS42Mmg2LjggYzMuMDAxIDAgNS4xOC0xLjU3IDUuMTgtNC4zNSAwLS43NC0uMDMtMS43LS4wNS0yLjQ5OUg3LjkyN2MtLjM2IDAtLjY3LjI2LS43Mi42MmwtNC4wNSAxNi44eiIgZmlsbD0iIzAwNDU3YyIvPjwvc3ZnPg=="
+                     class="payment-icon" alt="PayPal">
+                <div class="payment-details">
+                    <div class="payment-name">PayPal</div>
+                    <div class="payment-description">Safe payment with PayPal</div>
+                </div>
+            </div>
+            <div class="payment-option" data-method="card">
+                <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0OCIgaGVpZ2h0PSI0OCIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCBkPSJNMCA2aDI0djEyYzAgMS4xLS45IDItMiAyaC0yLjQ5OUw5LjY5NiAzLjUxQzkuNjI1IDMuNTQ0IDkuNTUyIDMuNTY5IDkuNDc5IDMuNTY5SDIuMDAyQzAuODk1IDMuNTY5IDAgNC40NTUgMCA1LjU2NHYxLjQzN3pNMiAxOGgxNHYtMkgydi0yaDE4djEyYzAgMS4xLS45IDItMiAyaC0yLjc1N2wtNC42MDItMTcuMTguMDE5LS4wMXoiIGZpbGw9IiM3NTc1NzUiLz48L3N2Zz4="
+                     class="payment-icon" alt="Credit Card">
+                <div class="payment-details">
+                    <div class="payment-name">Credit Card</div>
+                    <div class="payment-description">Pay with credit or debit card</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="payment-summary">
+            <h3>Payment Summary</h3>
+            <p id="modal-payment-details"></p>
+        </div>
+
+        <button id="modal-confirm-payment" class="payment-button" style="display: none;">
+            Confirm Payment
+        </button>
+    </div>
+</div>
+
+<!-- 查看已预订的票弹窗 -->
+<div id="booking-modal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal">&times;</span>
+        <h2>Your Booking Tickets</h2>
+        <div id="booking-details">
+            <!-- Dynamic content will be loaded here -->
+        </div>
+    </div>
+</div>
+
+<script>
+    // ================================
+    // 1) 用户和登录/注册逻辑 (纯前端)
+    // ================================
+    const users = [
+        { username: 'admin', password: '12345' } // 默认管理员账户
+    ];
+
+    document.getElementById('login-btn').addEventListener('click', () => {
+        const username = document.getElementById('login-username').value;
+        const password = document.getElementById('login-password').value;
+
+        const validUser = users.find(user => user.username === username && user.password === password);
+        if (validUser) {
+            alert('Login successful!');
+            document.getElementById('login-page').style.display = 'none';
+            document.getElementById('dashboard').style.display = 'block';
+            loadMovies();
+        } else {
+            alert('Invalid username or password.');
+        }
+    });
+
+    document.getElementById('register-btn').addEventListener('click', () => {
+        const username = document.getElementById('register-username').value;
+        const password = document.getElementById('register-password').value;
+
+        if (!username || !password) {
+            alert('Please enter both username and password.');
+            return;
+        }
+
+        const userExists = users.some(user => user.username === username);
+        if (userExists) {
+            alert('Username already exists. Please choose a different one.');
+            return;
+        }
+
+        users.push({ username, password });
+        alert('Registration successful! You can now log in using your new account.');
+
+        document.getElementById('register-username').value = '';
+        document.getElementById('register-password').value = '';
+    });
+
+    // ================================
+    // 2) 电影信息 & 选座 & 支付流程 (纯前端)
+    // ================================
+    const movies = [
+        { 
+            title: "Avengers: Endgame",
+            genre: "Action/Sci-Fi",
+            director: "Anthony and Joe Russo",
+            duration: "3h 1min",
+            price: 20,
+            releaseYear: 2019,
+            rating: "PG-13",
+            description: "After Thanos' devastating snap, the remaining Avengers must reunite for one final mission to restore balance to the universe and bring back their vanquished allies.",
+            cast: [
+                "Robert Downey Jr. as Iron Man",
+                "Chris Evans as Captain America",
+                "Scarlett Johansson as Black Widow",
+                "Chris Hemsworth as Thor",
+                "Mark Ruffalo as Hulk"
+            ],
+            reviews: {
+                imdb: "8.4/10",
+                rottenTomatoes: "94%"
+            },
+            highlights: [
+                "Epic conclusion to the Infinity Saga",
+                "Groundbreaking special effects",
+                "Emotional character arcs",
+                "Record-breaking box office success"
+            ],
+            image: "images/avengers.jpg"
+        },
+        { 
+            title: "Inception",
+            genre: "Sci-Fi/Action",
+            director: "Christopher Nolan",
+            duration: "2h 28min",
+            price: 15,
+            releaseYear: 2010,
+            rating: "PG-13",
+            description: "A skilled thief who specializes in extracting information from people's minds during their dreams takes on an impossible mission: planting an idea into someone's subconscious.",
+            cast: [
+                "Leonardo DiCaprio as Cobb",
+                "Joseph Gordon-Levitt as Arthur",
+                "Ellen Page as Ariadne",
+                "Tom Hardy as Eames",
+                "Ken Watanabe as Saito"
+            ],
+            reviews: {
+                imdb: "8.8/10",
+                rottenTomatoes: "87%"
+            },
+            highlights: [
+                "Mind-bending plot",
+                "Oscar-winning visual effects",
+                "Hans Zimmer's iconic score",
+                "Complex narrative structure"
+            ],
+            image: "images/inception.jpg"
+        },
+        { 
+            title: "Spider-Man: No Way Home",
+            genre: "Action/Adventure",
+            director: "Jon Watts",
+            duration: "2h 28min",
+            price: 18,
+            releaseYear: 2021,
+            rating: "PG-13",
+            description: "When Peter Parker's identity as Spider-Man is revealed, he seeks help from Doctor Strange, leading to a dangerous journey that forces him to discover what it truly means to be Spider-Man.",
+            cast: [
+                "Tom Holland as Peter Parker/Spider-Man",
+                "Zendaya as MJ",
+                "Benedict Cumberbatch as Doctor Strange",
+                "Jacob Batalon as Ned Leeds",
+                "Marisa Tomei as May Parker"
+            ],
+            reviews: {
+                imdb: "8.2/10",
+                rottenTomatoes: "93%"
+            },
+            highlights: [
+                "Multiverse storyline",
+                "Fan-favorite character returns",
+                "Emotional character development",
+                "Spectacular action sequences"
+            ],
+            image: "images/spiderman.jpg"
+        },
+        {
+            title: "The Dark Knight",
+            genre: "Action/Crime/Drama",
+            director: "Christopher Nolan",
+            duration: "2h 32min",
+            price: 16,
+            releaseYear: 2008,
+            rating: "PG-13",
+            description: "When the menace known as the Joker wreaks havoc and chaos on the people of Gotham, Batman must accept one of the greatest psychological and physical tests of his ability to fight injustice.",
+            cast: [
+                "Christian Bale as Bruce Wayne/Batman",
+                "Heath Ledger as The Joker",
+                "Aaron Eckhart as Harvey Dent",
+                "Michael Caine as Alfred",
+                "Gary Oldman as Jim Gordon"
+            ],
+            reviews: {
+                imdb: "9.0/10",
+                rottenTomatoes: "94%"
+            },
+            highlights: [
+                "Heath Ledger's legendary Joker performance",
+                "Complex moral themes",
+                "Revolutionary IMAX sequences",
+                "Oscar-winning achievements"
+            ],
+            image: "images/The Dark Knight.jpg"
+        }
+    ];
+
+    let currentBooking = null;   // 记录当前用户的选购信息
+    let bookingHistory = [];     // 保存所有已完成支付的订票记录
+
+    const movieList = document.getElementById('movie-list');
+    const seatContainer = document.getElementById('seat-container');
+    const confirmSeatBtn = document.getElementById('confirm-seat-btn');
+    const paymentBtn = document.getElementById('payment-btn');
+
+    // 加载电影列表
+    function loadMovies() {
+        movieList.innerHTML = '';
+        movies.forEach((movie, index) => {
+            const movieItem = document.createElement('li');
+            movieItem.className = 'movie-card';
+            
+            const movieContent = `
+                <img src="${movie.image}" alt="${movie.title}" class="movie-poster">
+                <div class="movie-details">
+                    <h3 class="movie-title">${movie.title}</h3>
+                    <div class="movie-info">
+                        <span class="rating">${movie.rating}</span>
+                        <span class="duration">${movie.duration}</span>
+                        <span class="year">${movie.releaseYear}</span>
+                    </div>
+                    <p class="genre">${movie.genre}</p>
+                    <p class="director">Director: ${movie.director}</p>
+                    <p class="description">${movie.description}</p>
+                    
+                    <div class="cast-section">
+                        <h4>Main Cast:</h4>
+                        <ul class="cast-list">
+                            ${movie.cast.slice(0, 3).map(actor => `<li>${actor}</li>`).join('')}
+                        </ul>
+                    </div>
+                    
+                    <div class="reviews">
+                        <span class="imdb">IMDb: ${movie.reviews.imdb}</span>
+                        <span class="rotten-tomatoes">Rotten Tomatoes: ${movie.reviews.rottenTomatoes}</span>
+                    </div>
+                    
+                    <div class="price-booking">
+                        <span class="price">$${movie.price}</span>
+                        <button class="book-btn" onclick="selectMovie(${index})">Book Now</button>
+                    </div>
+                </div>
+            `;
+            
+            movieItem.innerHTML = movieContent;
+            movieList.appendChild(movieItem);
+        });
+    }
+
+    // 用户点击“Book Now”选择某部电影
+    function selectMovie(index) {
+        const movie = movies[index];
+        currentBooking = { movie, seats: [] };
+        alert(`You selected "${movie.title}". Please choose your seats.`);
+        document.getElementById('seat-selection').style.display = 'block';
+        generateSeats();
+    }
+
+    // 生成座位图 (纯前端模拟)
+    function generateSeats() {
+        seatContainer.innerHTML = '';
+        for (let i = 1; i <= 5; i++) {
+            for (let j = 1; j <= 10; j++) {
+                const seat = document.createElement('div');
+                seat.innerText = `${i}-${j}`;
+                seat.addEventListener('click', () => selectSeat(seat));
+                seatContainer.appendChild(seat);
+            }
+        }
+    }
+
+    // 选中/取消选中座位
+    function selectSeat(seat) {
+        if (seat.classList.contains('selected')) {
+            seat.classList.remove('selected');
+            currentBooking.seats = currentBooking.seats.filter(s => s !== seat.innerText);
+        } else {
+            seat.classList.add('selected');
+            currentBooking.seats.push(seat.innerText);
+        }
+    }
+
+    // 点击“Confirm Seats”按钮
+    confirmSeatBtn.addEventListener('click', () => {
+        if (!currentBooking || currentBooking.seats.length === 0) {
+            alert('Please select at least one seat.');
+        } else {
+            alert(`You have selected seats: ${currentBooking.seats.join(', ')}.`);
+            paymentBtn.style.display = 'block'; // 显示支付按钮
+        }
+    });
+
+    // 点击“Payment”按钮，显示支付弹窗
+    paymentBtn.addEventListener('click', () => {
+        const modal = document.getElementById('payment-modal');
+        const paymentAmount = document.getElementById('payment-amount');
+        const modalPaymentDetails = document.getElementById('modal-payment-details');
+        
+        currentBooking.totalPrice = currentBooking.seats.length * currentBooking.movie.price;
+        
+        paymentAmount.innerHTML = `<h3>Total Amount: $${currentBooking.totalPrice}</h3>`;
+        modalPaymentDetails.innerHTML = `
+            <p>Movie: ${currentBooking.movie.title}</p>
+            <p>Seats: ${currentBooking.seats.join(', ')}</p>
+            <p>Amount: $${currentBooking.totalPrice}</p>
+        `;
+        
+        modal.style.display = 'block';
+    });
+
+    // ================================
+    // 3) 支付弹窗操作
+    // ================================
+    let selectedPaymentMethod = null;
+
+    // 关闭支付弹窗
+    document.querySelector('.close-modal').addEventListener('click', () => {
+        document.getElementById('payment-modal').style.display = 'none';
+        resetPaymentSelection();
+    });
+
+    // 点击弹窗外部也可关闭
+    window.addEventListener('click', (event) => {
+        const modal = document.getElementById('payment-modal');
+        if (event.target === modal) {
+            modal.style.display = 'none';
+            resetPaymentSelection();
+        }
+    });
+
+    // 选择支付方式
+    document.querySelectorAll('.payment-option').forEach(option => {
+        option.addEventListener('click', () => {
+            // 先清除其他选项的选中状态
+            document.querySelectorAll('.payment-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            // 选中当前
+            option.classList.add('selected');
+            selectedPaymentMethod = option.dataset.method;
+            
+            // 显示确认支付按钮
+            document.getElementById('modal-confirm-payment').style.display = 'block';
+        });
+    });
+
+    // 点击“Confirm Payment”
+    document.getElementById('modal-confirm-payment').addEventListener('click', () => {
+        if (!selectedPaymentMethod) {
+            alert('Please select a payment method');
+            return;
+        }
+
+        // 展示加载动画
+        const loadingSpinner = document.createElement('div');
+        loadingSpinner.className = 'loading-spinner';
+        document.querySelector('.modal-content').appendChild(loadingSpinner);
+        document.getElementById('modal-confirm-payment').style.display = 'none';
+
+        // 模拟支付处理，2秒后结束
+        setTimeout(() => {
+            loadingSpinner.remove();
+            document.getElementById('payment-modal').style.display = 'none';
+            
+            // 生成新的booking记录
+            const booking = {
+                ...currentBooking,
+                paymentMethod: selectedPaymentMethod,
+                date: new Date().toLocaleString(),
+                bookingId: Math.random().toString(36).substr(2, 9)
+            };
+            bookingHistory.push(booking);
+            
+            alert('Payment successful! Your booking has been confirmed.');
+            
+            // 重置
+            resetBooking();
+            resetPaymentSelection();
+            loadMovies();
+        }, 2000);
+    });
+
+    // 重置支付选项
+    function resetPaymentSelection() {
+        selectedPaymentMethod = null;
+        document.querySelectorAll('.payment-option').forEach(opt => {
+            opt.classList.remove('selected');
+        });
+        document.getElementById('modal-confirm-payment').style.display = 'none';
+    }
+
+    // 重置当前预订信息
+    function resetBooking() {
+        currentBooking = null;
+        document.getElementById('seat-selection').style.display = 'none';
+        document.getElementById('payment-btn').style.display = 'none';
+    }
+
+    // ================================
+    // 4) 查看已预订的票
+    // ================================
+    document.getElementById('view-booking-btn').addEventListener('click', () => {
+        const bookingModal = document.getElementById('booking-modal');
+        const bookingDetails = document.getElementById('booking-details');
+
+        bookingDetails.innerHTML = '';
+
+        if (bookingHistory.length === 0) {
+            bookingDetails.innerHTML = '<p>No bookings found.</p>';
+        } else {
+            bookingHistory.forEach((booking, index) => {
+                const bookingItem = document.createElement('div');
+                bookingItem.className = 'booking-record';
+
+                bookingItem.innerHTML = `
+                    <div class="booking-header">
+                        <h3>${index + 1}. ${booking.movie.title}</h3>
+                        <span class="booking-date">Booked on: ${booking.date}</span>
+                    </div>
+                    
+                    <div class="movie-detailed-info">
+                        <div class="movie-primary-details">
+                            <p><strong>Director:</strong> ${booking.movie.director}</p>
+                            <p><strong>Genre:</strong> ${booking.movie.genre}</p>
+                            <p><strong>Duration:</strong> ${booking.movie.duration}</p>
+                            <p><strong>Release Year:</strong> ${booking.movie.releaseYear}</p>
+                            <p><strong>Rating:</strong> ${booking.movie.rating}</p>
+                        </div>
+                        
+                        <div class="movie-description">
+                            <h4>Synopsis:</h4>
+                            <p>${booking.movie.description}</p>
+                        </div>
+                        
+                        <div class="movie-cast">
+                            <h4>Main Cast:</h4>
+                            <ul>
+                                ${booking.movie.cast.map(actor => `<li>${actor}</li>`).join('')}
+                            </ul>
+                        </div>
+                        
+                        <div class="movie-reviews">
+                            <h4>Reviews:</h4>
+                            <p><strong>IMDb:</strong> ${booking.movie.reviews.imdb}</p>
+                            <p><strong>Rotten Tomatoes:</strong> ${booking.movie.reviews.rottenTomatoes}</p>
+                        </div>
+                    </div>
+
+                    <div class="booking-details">
+                        <h4>Booking Information:</h4>
+                        <p><strong>Seats:</strong> ${booking.seats.join(', ')}</p>
+                        <p><strong>Total Price:</strong> $${booking.totalPrice}</p>
+                        <p><strong>Payment Method:</strong> ${booking.paymentMethod}</p>
+                    </div>
+
+                    <div class="booking-actions">
+                        <button class="rate-movie-btn" onclick="rateMovie(${index})">Rate Movie</button>
+                        <button class="cancel-movie-btn" onclick="cancelBooking(${index})">Cancel Booking</button>
+                    </div>
+                `;
+
+                bookingDetails.appendChild(bookingItem);
+            });
+        }
+
+        bookingModal.style.display = 'block';
+    });
+
+    // 关闭查看票的弹窗
+    document.querySelectorAll('.close-modal').forEach(closeButton => {
+        closeButton.addEventListener('click', () => {
+            closeButton.closest('.modal').style.display = 'none';
+        });
+    });
+
+    // 用户对电影评分
+    function rateMovie(index) {
+        const movieTitle = bookingHistory[index].movie.title;
+        const rating = prompt(`Rate the movie "${movieTitle}" (1-5):`);
+        
+        if (rating && rating >= 1 && rating <= 5) {
+            alert(`Thank you for rating "${movieTitle}" with a ${rating}/5.`);
+        } else {
+            alert('Invalid rating. Please try again.');
+        }
+    }
+
+    // 用户取消预订
+    function cancelBooking(index) {
+        const confirmCancel = confirm(`Are you sure you want to cancel the booking for "${bookingHistory[index].movie.title}"?`);
+        if (confirmCancel) {
+            bookingHistory.splice(index, 1);
+            alert('Booking canceled successfully.');
+            // 重新刷新已预订界面
+            document.getElementById('view-booking-btn').click();
+        }
+    }
+
+    // ================================
+    // 5) Logout
+    // ================================
+    document.getElementById('logout-btn').addEventListener('click', () => {
+        alert('Logged out successfully.');
+        document.getElementById('dashboard').style.display = 'none';
+        document.getElementById('login-page').style.display = 'block';
+    });
+</script>
+</body>
+</html>
